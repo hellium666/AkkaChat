@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AkkaChat.Server", "AkkaChat.Server\AkkaChat.Server.csproj", "{034EFD68-1D6E-41F0-8785-916B96D9122F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AkkaChat.Client", "AkkaChat.Client\AkkaChat.Client.csproj", "{E0B717FF-A7AD-4B7E-8343-622D9D21C176}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AkkaChat", "AkkaChat\AkkaChat.csproj", "{CC347CC0-699E-4B4E-98F1-1B347EE8B5F3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{034EFD68-1D6E-41F0-8785-916B96D9122F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{034EFD68-1D6E-41F0-8785-916B96D9122F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{034EFD68-1D6E-41F0-8785-916B96D9122F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{034EFD68-1D6E-41F0-8785-916B96D9122F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0B717FF-A7AD-4B7E-8343-622D9D21C176}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0B717FF-A7AD-4B7E-8343-622D9D21C176}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0B717FF-A7AD-4B7E-8343-622D9D21C176}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0B717FF-A7AD-4B7E-8343-622D9D21C176}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC347CC0-699E-4B4E-98F1-1B347EE8B5F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC347CC0-699E-4B4E-98F1-1B347EE8B5F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC347CC0-699E-4B4E-98F1-1B347EE8B5F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC347CC0-699E-4B4E-98F1-1B347EE8B5F3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
