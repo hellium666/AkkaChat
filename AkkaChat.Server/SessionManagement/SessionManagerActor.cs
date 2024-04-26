@@ -1,61 +1,53 @@
-using Akka.Actor;
+﻿using Akka.Actor;
+using Akka.Hosting;
 
 namespace AkkaChat.Server.SessionManagement;
 
 public class SessionManagerActor : ReceiveActor
 {
-    private readonly HashSet<string> _groups = new();
+    private readonly IActorRef _stats;
+    private readonly IActorRef _groupsRegion;
 
-    private int _userCount;
-    private int _sessionCount;
-    private int _messageCount;
-    public SessionManagerActor()
+    public SessionManagerActor(IReadOnlyActorRegistry registry)
     {
-        Receive<AddSession>(m =>
-        {
-            _sessionCount++;
-            ForwardToUser(m);
-        });
+        _stats = registry.Get<StatsActor>();
+        _groupsRegion = registry.Get<UserGroupsActor>();
 
-        Receive<RemoveSession>(m =>
-        {
-            _sessionCount--;
-            ForwardToUser(m);
-        });
-
+        Receive<AddSession>(ForwardSession);
+        Receive<RemoveSession>(ForwardSession);
         Receive<GetSessions>(ForwardToUser);
 
-        Receive<JoinGroup>(m =>
-        {
-            _groups.Add(m.GroupName);
-            ForwardToUser(m);
-        });
+        Receive<JoinGroup>(ForwardGroup);
+        Receive<LeaveGroup>(ForwardGroup);
+        Receive<GetGroups>(_groupsRegion.Forward);
 
-        Receive<LeaveGroup>(ForwardToUser);
-        Receive<GetGroups>(ForwardToUser);
-
-        Receive<ChatMessage>(_ => _messageCount++);
-        Receive<GetStats>(_ => Sender.Tell(BuildStats()));
+        Receive<ChatMessage>(_stats.Forward);
     }
 
-    private ChatStats BuildStats()
+    private void ForwardSession(IWithLogin m)
     {
-        return new ChatStats(_userCount, _sessionCount, _groups.Count, _messageCount);
+        var user = GetOrCreateUserActor(m.Login);
+        user.Forward(m);
+        _stats.Forward(m);
     }
 
-    private void ForwardToUser(IWithLogin m)
+    private void ForwardGroup(IWithLogin m)
     {
-        var user = GetOrCreateUserActor(m);
+        _groupsRegion.Forward(m);
+        _stats.Forward(m);
+    }
+
+    private static void ForwardToUser(IWithLogin m)
+    {
+        var user = GetOrCreateUserActor(m.Login);
         user.Forward(m);
     }
-
-    private IActorRef GetOrCreateUserActor(IWithLogin m)
+    
+    private static IActorRef GetOrCreateUserActor(string login)
     {
-        var child = Context.Child(m.Login);
-        if (!child.Equals(ActorRefs.Nobody)) 
-            return child;
-
-        _userCount++;
-        return Context.ActorOf<UserActor>(m.Login);
+        var child = Context.Child(login);
+        return child.Equals(ActorRefs.Nobody) 
+            ? Context.ActorOf<UserSessionsActor>(login) 
+            : child;
     }
 }

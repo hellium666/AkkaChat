@@ -14,7 +14,18 @@
       "launchBrowser": false,
       "applicationUrl": "http://localhost:20000",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "AKKA_CHAT_CLUSTER_PORT": "1701"
+      }
+    },
+    "AkkaChat.Server2": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:21000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "AKKA_CHAT_CLUSTER_PORT": "1702"
       }
     },
     "IIS Express": {
