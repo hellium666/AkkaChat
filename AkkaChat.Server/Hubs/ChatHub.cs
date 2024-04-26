@@ -1,4 +1,6 @@
-﻿using AkkaChat.Server.SessionManagement;
+﻿using Akka.Actor;
+using Akka.Hosting;
+using AkkaChat.Server.SessionManagement;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
@@ -7,11 +9,11 @@ namespace AkkaChat.Server.Hubs;
 [Authorize(AuthenticationSchemes = LoginApiKeyAuthenticationHandler.DefaultSchemeName)]
 public class ChatHub : Hub<IChatHubClient>
 {
-    private readonly ISessionsManager _sessionsManager;
+    private readonly IActorRef _sessionsManager;
 
-    public ChatHub(ISessionsManager sessionsManager)
+    public ChatHub(IReadOnlyActorRegistry registry)
     {
-        _sessionsManager = sessionsManager;
+        _sessionsManager = registry.Get<SessionManagerActor>();
     }
 
     public async Task SendMessage(string groupName, string message)
@@ -20,7 +22,7 @@ public class ChatHub : Hub<IChatHubClient>
             return;
         
         var msg = new ChatMessage(groupName, DateTimeOffset.Now, Context.UserIdentifier, message);
-        _sessionsManager.OnMessage(msg);
+        _sessionsManager.Tell(msg);
         await Clients.Group(groupName).OnMessage(msg);
     }
     
@@ -30,10 +32,10 @@ public class ChatHub : Hub<IChatHubClient>
         if (string.IsNullOrWhiteSpace(login))
             return;
         
-        _sessionsManager.AddUserToGroup(login, groupName);
-        var sessions = _sessionsManager.GetUserSessions(login);
+        _sessionsManager.Tell(new JoinGroup(login, groupName));
+        var sessions = await _sessionsManager.Ask<UserSessions>(new GetSessions(login));
         await Clients.User(login).OnJoinedGroup(groupName);
-        foreach (var session in sessions)
+        foreach (var session in sessions.Sessions)
         {
             await Groups.AddToGroupAsync(session, groupName);
         }
@@ -45,9 +47,9 @@ public class ChatHub : Hub<IChatHubClient>
         if (string.IsNullOrWhiteSpace(login))
             return;
         
-        _sessionsManager.RemoveUserFromGroup(login, groupName);
-        var sessions = _sessionsManager.GetUserSessions(login);
-        foreach (var session in sessions)
+        _sessionsManager.Tell(new LeaveGroup(login, groupName));
+        var sessions = await _sessionsManager.Ask<UserSessions>(new GetSessions(login));
+        foreach (var session in sessions.Sessions)
         {
             await Groups.RemoveFromGroupAsync(session, groupName);
         }
@@ -61,10 +63,10 @@ public class ChatHub : Hub<IChatHubClient>
         if (!string.IsNullOrWhiteSpace(login))
         {
             var connectionId = Context.ConnectionId;
-            _sessionsManager.OnConnected(login, connectionId);
-            var groups = _sessionsManager.GetUserGroups(login);
+            _sessionsManager.Tell(new AddSession(login, connectionId));
+            var groups = await _sessionsManager.Ask<UserGroups>(new GetGroups(login));
             var client = Clients.Client(connectionId);
-            foreach (var group in groups)
+            foreach (var group in groups.Groups)
             {
                 await client.OnJoinedGroup(group);
                 await Groups.AddToGroupAsync(connectionId, group);
@@ -78,7 +80,7 @@ public class ChatHub : Hub<IChatHubClient>
     {
         var login = Context.UserIdentifier;
         if (!string.IsNullOrWhiteSpace(login))
-            _sessionsManager.OnDisconnected(login, Context.ConnectionId);
+            _sessionsManager.Tell(new RemoveSession(login, Context.ConnectionId));
 
         return base.OnDisconnectedAsync(exception);
     }

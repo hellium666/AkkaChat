@@ -17,4 +17,9 @@
       <ProjectReference Include="..\AkkaChat\AkkaChat.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <PackageReference Include="Akka" Version="1.5.19" />
+        <PackageReference Include="Akka.Cluster.Hosting" Version="1.5.19" />
+    </ItemGroup>
+
 </Project>
